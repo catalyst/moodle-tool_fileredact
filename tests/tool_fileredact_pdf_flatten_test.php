@@ -18,6 +18,10 @@ namespace tool_fileredact;
 
 use tool_fileredact\local\pdf;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/application_trait.php');
+
 /**
  * Defines names of plugin types and some strings used at the plugin managment
  *
@@ -28,6 +32,7 @@ use tool_fileredact\local\pdf;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_fileredact_pdf_flatten_test extends \advanced_testcase {
+    use application_trait;
 
     /**
      * Check and ensure the fixture file has the markers we're testing for.
@@ -37,7 +42,9 @@ class tool_fileredact_pdf_flatten_test extends \advanced_testcase {
 
         // Ensure example pdf DOES contain javascript markers.
         exec('strings ' . $pathname, $output);
-        $this->assertStringContainsString('/JavaScript', implode($output));
+        $output = implode($output);
+        $this->compatible_assertStringContainsString('/JavaScript', $output);
+        $this->compatible_assertStringContainsString('/JS', $output);
     }
 
     /**
@@ -52,7 +59,9 @@ class tool_fileredact_pdf_flatten_test extends \advanced_testcase {
 
         // Ensure the final pdf does NOT contain javascript markers, thus indicating it was flattened.
         exec('strings ' . $pathname, $output);
-        $this->assertStringNotContainsString('/JavaScript', implode($output));
+        $output = implode($output);
+        $this->compatible_assertStringNotContainsString('/JavaScript', $output);
+        $this->compatible_assertStringNotContainsString('/JS', $output);
     }
 
     /**
