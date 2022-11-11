@@ -33,13 +33,21 @@ use tool_fileredact\local\pdf;
  * @param array $more Optionally contains the content or path to the file
  */
 function tool_fileredact_before_file_created(stdClass $filerecord = null, array $more) {
+    // Continue only if the plugin is enabled.
+    $enabled = get_config('tool_fileredact', 'enabled');
+    if (!$enabled) {
+        return;
+    }
+
     if (empty($filerecord)) {
         return;
     }
 
     // If it's a PDF file, remove non-basic behaviour (javascript, input fields, etc) using ghostscript.
     $mimetypes = get_mimetypes_array();
-    if ($filerecord->mimetype === $mimetypes['pdf']['type']) {
+    if (get_config('tool_fileredact', 'pdfflattenenabled')
+        && $filerecord->mimetype === $mimetypes['pdf']['type']
+    ) {
         $handler = new pdf\flatten($filerecord, $more);
         $handler->run();
     }
