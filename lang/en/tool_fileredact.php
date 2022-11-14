@@ -14,24 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_fileredact\privacy;
-
 /**
- * Currently reports no privatge data being kept. This may need to change.
+ * Language strings
  *
  * @package   tool_fileredact
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
  * @copyright Catalyst IT, 2022
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
 
-    /**
-     * Why this plugin stores no data.
-     *
-     * @return  string
-     */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
-    }
-}
+defined('MOODLE_INTERNAL') || die();
+
+$string['enabled'] = 'Enable/disable this plugin';
+$string['pdfflattenenabled'] = 'Enable/disable PDF flatten';
+$string['pdfflattenenabled_help'] = 'Flattening a pdf may remove expected functionality, but will remove javascript, actions, events, etc, and try to preserve basic functionality, such as text search if available in the original PDF.';
+$string['pluginname'] = 'File Redact';
+$string['privacy:metadata'] = 'The fileredact tool does not store any data';
