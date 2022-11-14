@@ -30,17 +30,17 @@ class flatten {
     private $filerecord;
 
     /** @var array additional options (path, contents) provided from the before_file_created hook */
-    private $more;
+    private $hookargs;
 
     /**
      * Initialise this instance
      *
      * @param \stdClass $filerecord
-     * @param array $more
+     * @param array $hookargs
      */
-    public function __construct(\stdClass $filerecord, array $more) {
+    public function __construct(\stdClass $filerecord, array $hookargs) {
         $this->filerecord = $filerecord;
-        $this->more = $more;
+        $this->hookargs = $hookargs;
     }
 
     /**
@@ -50,7 +50,7 @@ class flatten {
      */
     public function run() {
         // Get the conversion command.
-        $src = $this->more['pathname'];
+        $src = $this->hookargs['pathname'];
         $temparea = make_request_directory();
         $dst = $temparea . DIRECTORY_SEPARATOR . $this->filerecord->filename;
 
@@ -58,11 +58,12 @@ class flatten {
         $command = $this->get_gs_command($src, $dst);
 
         // Apply conversion.
-        exec($command);
+        exec($command, $output);
 
         // Test to ensure conversion succeeded or not.
         if (!file_exists($dst)) {
             // Something has gone wrong in the conversion.
+            debugging('tool_fileredact: ' . implode($output));
             return false;
         }
 
@@ -76,7 +77,7 @@ class flatten {
      *
      * @param string $src The source path of the PDF file.
      * @param string $dst The source path of the PDF file.
-     * @return string The ghostscript (gs) command to use to extract a page as PNG image.
+     * @return string The ghostscript (gs) command to use to flatten the file
      */
     private function get_gs_command(string $src, string $dst): string {
         global $CFG;
@@ -84,7 +85,7 @@ class flatten {
         $gsexec = \escapeshellarg($CFG->pathtogs);
         $tempdstarg = \escapeshellarg($dst);
         $tempsrcarg = \escapeshellarg($src);
-        $command = "$gsexec -q -sDEVICE=pdfwrite -dSAFER -dBATCH -dNOPAUSE -sOutputFile=$tempdstarg $tempsrcarg";
+        $command = "$gsexec -sDEVICE=pdfwrite -dSAFER -dBATCH -dNOPAUSE -sOutputFile=$tempdstarg $tempsrcarg";
         return $command;
     }
 }

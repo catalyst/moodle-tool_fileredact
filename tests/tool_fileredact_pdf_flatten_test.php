@@ -20,7 +20,7 @@ use tool_fileredact\local\pdf;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/application_trait.php');
+require_once(__DIR__ . '/compatibility_trait.php');
 
 /**
  * Defines names of plugin types and some strings used at the plugin managment
@@ -32,7 +32,7 @@ require_once(__DIR__ . '/application_trait.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_fileredact_pdf_flatten_test extends \advanced_testcase {
-    use application_trait;
+    use compatibility_trait;
 
     /**
      * Check and ensure the fixture file has the markers we're testing for.

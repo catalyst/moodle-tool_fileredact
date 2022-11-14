@@ -15,7 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Helper unit test methods that are highly related to the application.
+ * Helper unit test methods that are highly related to this plugin.
+ *
+ * This includes methods that allow better backwards compatibility.
  *
  * @package   tool_fileredact
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
@@ -25,17 +27,7 @@
 
 namespace tool_fileredact;
 
-/**
- * Helper unit test methods that are highly related to the application.
- *
- * This also includes methods that have been included to allow backwards compatibility.
- *
- * @package   tool_fileredact
- * @author    Kevin Pham <kevinpham@catalyst-au.net>
- * @copyright Catalyst IT, 2022
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-trait application_trait {
+trait compatibility_trait {
 
     // PHPUnit backwards compatible methods which handles the fallback to previous version calls.
     // @codingStandardsIgnoreStart
