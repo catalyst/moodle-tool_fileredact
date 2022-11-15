@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="file redact tool">
+  <img src="https://user-images.githubusercontent.com/9924643/201838789-d96b3174-49e7-4347-80f6-6782c4933e89.png" alt="file redact tool">
 </p>
 
 <!-- Uncomment when ready -->
@@ -19,6 +19,15 @@ File redact is a tool which processes files and strips various content from them
 | Moodle version    | Branch           | PHP       |
 |-------------------|------------------|-----------|
 | TBA               | TBA              | TBA       |
+
+## Dependencies
+
+For the following settings, you will need to install their associated dependencies before you can use them.
+
+| Setting  | Details
+|-------------------|------------------|-----------|
+| jpgstripexifenabled | Remove EXIF from JPEG images. <br><small>Requires **exiftool** installed</small>
+| pdflattenenabled | Remove JS, Actions, etc from PDF by flattening it. <br><small>Requires **ghostscript (gs)** installed</small> <br><small>Requires **strings** installed</small>
 
 ## Installation
 
