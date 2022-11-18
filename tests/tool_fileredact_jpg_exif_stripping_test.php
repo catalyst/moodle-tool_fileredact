@@ -16,7 +16,7 @@
 
 namespace tool_fileredact;
 
-use tool_fileredact\local\pdf;
+use tool_fileredact\local\jpg;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -26,41 +26,42 @@ require_once(__DIR__ . '/compatibility_trait.php');
  * Defines names of plugin types and some strings used at the plugin managment
  *
  * @package   tool_fileredact
- * @covers    \tool_fileredact\classes\local\pdf\flatten
+ * @covers    \tool_fileredact\classes\local\jpg\strip_exif
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
  * @copyright Catalyst IT, 2022
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_fileredact_pdf_flatten_test extends \advanced_testcase {
+class tool_fileredact_jpg_exif_stripping_test extends \advanced_testcase {
     use compatibility_trait;
 
     /**
      * Check and ensure the fixture file has the markers we're testing for.
      */
-    public function test_fixture_has_js_markers() {
-        $pathname = __DIR__ . '/fixtures/js-link.pdf';
+    public function test_fixture_has_gps_markers() {
+        $pathname = __DIR__ . '/fixtures/gps.jpg';
 
-        // Ensure example pdf DOES contain javascript markers.
-        exec('strings ' . $pathname, $output);
+        $exiftoolexec = \escapeshellarg('exiftool');
+        exec("$exiftoolexec $pathname", $output);
         $output = implode($output);
-        $this->compatible_assertStringContainsString('/JavaScript', $output);
-        $this->compatible_assertStringContainsString('/JS', $output);
+        $this->compatible_assertStringContainsString('GPS Latitude', $output);
+        $this->compatible_assertStringContainsString('GPS Longitude', $output);
     }
 
     /**
-     * Test to ensure the pdf comes out flattened, and contain no JS markers.
+     * Test to ensure the JPG is processed, and returns no GPS information
      */
-    public function test_flattening_removes_js_markers() {
-        $pathname = $this->get_copy_of(__DIR__ . '/fixtures/js-link.pdf');
+    public function test_method_removes_gps_markers() {
+        $pathname = $this->get_copy_of(__DIR__ . '/fixtures/gps.jpg');
 
-        // Convert example PDF.
-        (new pdf\flatten)->run((object) ['filename' => 'test.pdf'], ['pathname' => $pathname]);
+        // Convert example jpg.
+        (new jpg\strip_exif)->run((object) ['filename' => 'test.jpg'], ['pathname' => $pathname]);
 
-        // Ensure the final pdf does NOT contain javascript markers, thus indicating it was flattened.
-        exec('strings ' . $pathname, $output);
+        // Ensure the final jpg does NOT contain javascript markers, thus indicating it was flattened.
+        $exiftoolexec = \escapeshellarg('exiftool');
+        exec("$exiftoolexec $pathname", $output);
         $output = implode($output);
-        $this->compatible_assertStringNotContainsString('/JavaScript', $output);
-        $this->compatible_assertStringNotContainsString('/JS', $output);
+        $this->compatible_assertStringNotContainsString('GPS Latitude', $output);
+        $this->compatible_assertStringNotContainsString('GPS Longitude', $output);
     }
 
     /**

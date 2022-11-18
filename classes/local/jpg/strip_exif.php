@@ -63,8 +63,8 @@ class strip_exif implements redaction_method {
     /**
      * Gets the exiftool command to strip the JPG file of all EXIF data.
      *
-     * @param string $src The source path of the PDF file.
-     * @param string $dst The source path of the PDF file.
+     * @param string $src The source path of the file.
+     * @param string $dst The source path of the file.
      * @return string The command to use to remove all EXIF data from the file
      */
     private function get_exiftool_command(string $src, string $dst): string {
