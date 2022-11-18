@@ -45,6 +45,14 @@ if ($hassiteconfig) {
             get_string('pdfflattenenabled_help', 'tool_fileredact'),
             '1'
         ));
+
+        // JPG EXIF stripping.
+        $settings->add(new admin_setting_configcheckbox(
+            'tool_fileredact/jpgstripexifenabled',
+            get_string('jpgstripexifenabled', 'tool_fileredact'),
+            get_string('jpgstripexifenabled_help', 'tool_fileredact'),
+            '1'
+        ));
     }
 
     $settings = null;

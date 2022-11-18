@@ -15,38 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Lib
+ * The redaction method interface describes the required methods for each redaction strategy
  *
  * @package   tool_fileredact
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
  * @copyright Catalyst IT, 2022
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
  */
 
-use tool_fileredact\local\pdf;
-use tool_fileredact\local\jpg;
-use tool_fileredact\local\redaction_controller;
+namespace tool_fileredact\local;
 
-/**
- * Processes a file (e.g. redaction) before the file is created.
- *
- * @param stdClass $filerecord New file record
- * @param array $more Optionally contains the content or path to the file
- */
-function tool_fileredact_before_file_created(stdClass $filerecord = null, array $more) {
-    // Continue only if the plugin is enabled.
-    $enabled = get_config('tool_fileredact', 'enabled');
-    if (!$enabled) {
-        return;
-    }
+interface redaction_method {
 
-    if (empty($filerecord)) {
-        return;
-    }
-
-    // Initialise and run the redactions, if required.
-    $redactor = new redaction_controller($filerecord, $more);
-    $redactor->run();
+    /**
+     * Processes redaction for the given file.
+     *
+     * @param \stdClass $filerecord
+     * @param array $hookargs
+     * @return bool as to whether the operation was successful
+     */
+    public function run(\stdClass $filerecord, array $hookargs): bool;
 }
-

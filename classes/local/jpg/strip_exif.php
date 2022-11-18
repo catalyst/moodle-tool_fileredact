@@ -14,65 +14,64 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_fileredact\local\pdf;
+namespace tool_fileredact\local\jpg;
 
 use tool_fileredact\local\redaction_method;
 
 /**
- * Flattens the file using ghostscript.
+ * Strips exif data from JPG files using exiftool
  *
  * @package   tool_fileredact
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
  * @copyright Catalyst IT, 2022
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class flatten implements redaction_method {
+class strip_exif implements redaction_method {
 
     /**
-     * Flattens the file using ghostscript
+     * Strips the EXIF data from a given JPG file
      *
      * @param \stdClass $filerecord
      * @param array $hookargs
      * @return bool as to whether the operation was successful
      */
     public function run(\stdClass $filerecord, array $hookargs): bool {
-        // Get the conversion command.
         $src = $hookargs['pathname'];
         $temparea = make_request_directory();
         $dst = $temparea . DIRECTORY_SEPARATOR . $filerecord->filename;
 
-        // Prepare the ghostscript (gs) command.
-        $command = $this->get_gs_command($src, $dst);
+        // Prepare the exiftool command.
+        $command = $this->get_exiftool_command($src, $dst);
 
-        // Apply conversion.
+        // Apply redaction.
         exec($command, $output);
 
-        // Test to ensure conversion succeeded or not.
+        // Test to ensure redaction succeeded or not.
         if (!file_exists($dst)) {
-            // Something has gone wrong in the conversion.
+            // Something has gone wrong in the redaction.
             debugging('tool_fileredact: ' . implode($output));
             return false;
         }
 
-        // Conversion was successful, so replace the original with the new in one op.
+        // TODO: Any further testing to ensure the output file is valid / correct / etc.
+
+        // Removal of EXIF data was successful, replace the original with the new in one op.
         rename($dst, $src);
         return true;
     }
 
     /**
-     * Gets the ghostscript (gs) command to convert the PDF into one without JS / non-basic behaviour.
+     * Gets the exiftool command to strip the JPG file of all EXIF data.
      *
      * @param string $src The source path of the PDF file.
      * @param string $dst The source path of the PDF file.
-     * @return string The ghostscript (gs) command to use to flatten the file
+     * @return string The command to use to remove all EXIF data from the file
      */
-    private function get_gs_command(string $src, string $dst): string {
-        global $CFG;
-
-        $gsexec = \escapeshellarg($CFG->pathtogs);
+    private function get_exiftool_command(string $src, string $dst): string {
+        $exiftoolexec = \escapeshellarg('exiftool');
         $tempdstarg = \escapeshellarg($dst);
         $tempsrcarg = \escapeshellarg($src);
-        $command = "$gsexec -sDEVICE=pdfwrite -dSAFER -dBATCH -dNOPAUSE -sOutputFile=$tempdstarg $tempsrcarg";
+        $command = "$exiftoolexec -all= -o $tempdstarg $tempsrcarg";
         return $command;
     }
 }

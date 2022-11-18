@@ -9,5 +9,5 @@ jobs:
     with:
       disable_behat: true
       disable_grunt: true
-      extra_plugin_runners: 'sudo apt install ghostscript'
+      extra_plugin_runners: 'sudo apt update && sudo apt install ghostscript exiftool'
 
