@@ -32,7 +32,6 @@ interface redaction_method {
      *
      * @param \stdClass $filerecord
      * @param array $hookargs
-     * @return bool as to whether the operation was successful
      */
-    public function run(\stdClass $filerecord, array $hookargs): bool;
+    public function run(\stdClass $filerecord, array $hookargs);
 }

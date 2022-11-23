@@ -33,9 +33,8 @@ class flatten implements redaction_method {
      *
      * @param \stdClass $filerecord
      * @param array $hookargs
-     * @return bool as to whether the operation was successful
      */
-    public function run(\stdClass $filerecord, array $hookargs): bool {
+    public function run(\stdClass $filerecord, array $hookargs) {
         // Get the conversion command.
         $src = $hookargs['pathname'];
         $temparea = make_request_directory();
@@ -45,18 +44,19 @@ class flatten implements redaction_method {
         $command = $this->get_gs_command($src, $dst);
 
         // Apply conversion.
-        exec($command, $output);
+        exec($command, $output, $code);
 
-        // Test to ensure conversion succeeded or not.
-        if (!file_exists($dst)) {
-            // Something has gone wrong in the conversion.
+        // Test redaction process issues.
+        if ($code !== 0           // Non-zero return code.
+            || !file_exists($dst) // Ensure new file exists.
+        ) {
+            // Something has gone wrong in the redaction process.
             debugging('tool_fileredact: ' . implode($output));
-            return false;
+            throw new \moodle_exception('redactionfailed:failedtoprocess', 'tool_fileredact', '', get_class($this));
         }
 
         // Conversion was successful, so replace the original with the new in one op.
         rename($dst, $src);
-        return true;
     }
 
     /**

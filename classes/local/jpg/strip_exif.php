@@ -33,38 +33,84 @@ class strip_exif implements redaction_method {
      *
      * @param \stdClass $filerecord
      * @param array $hookargs
-     * @return bool as to whether the operation was successful
      */
-    public function run(\stdClass $filerecord, array $hookargs): bool {
+    public function run(\stdClass $filerecord, array $hookargs) {
         $src = $hookargs['pathname'];
         $temparea = make_request_directory();
+        $newsrc = $temparea . DIRECTORY_SEPARATOR . 'original_' . $filerecord->filename;
         $dst = $temparea . DIRECTORY_SEPARATOR . $filerecord->filename;
 
+        // Copy the file due to exiftool being rather sensitive about filenames.
+        copy($src, $newsrc);
+
         // Prepare the exiftool command.
-        $command = $this->get_exiftool_command($src, $dst);
+        $command = $this->get_exiftool_command($newsrc, $dst);
 
         // Apply redaction.
-        exec($command, $output);
+        exec($command, $output, $code);
+
+        // If the return code was anything other than zero.
+        if ($code !== 0) {
+            // Something has gone wrong in the redaction.
+            debugging('tool_fileredact: ' . implode($output));
+            throw new \moodle_exception('redactionfailed:failedtoprocess', 'tool_fileredact', '', get_class($this));
+        }
+
+        // If the file was "unchanged", then return true but don't replace the original.
+        if (stripos(implode($output), '1 image files unchanged') !== false) {
+            return;
+        }
 
         // Test to ensure redaction succeeded or not.
         if (!file_exists($dst)) {
             // Something has gone wrong in the redaction.
             debugging('tool_fileredact: ' . implode($output));
-            return false;
+            throw new \moodle_exception('redactionfailed:failedtoprocess', 'tool_fileredact', '', get_class($this));
         }
 
-        // TODO: Any further testing to ensure the output file is valid / correct / etc.
+        // Extra cautious check to ensure the sensitive EXIF data is no longer present.
+        if ($this->is_sensitive($dst)) {
+            throw new \moodle_exception('redactionfailed:stillsensitive', 'tool_fileredact', '', get_class($this));
+        }
 
         // Removal of EXIF data was successful, replace the original with the new in one op.
         rename($dst, $src);
-        return true;
+    }
+
+    /**
+     * Checks if the target file is clean or not
+     *
+     * Probably a overly cautious check, but will check against a list of known markers considered sensitive
+     *
+     * @param string $filepath the path of the file to check
+     */
+    private function is_sensitive(string $filepath) {
+        // Ensure the jpg does NOT contain any sensitive markers (e.g. GPS), thus indicating it was redacted.
+        $exiftoolexec = \escapeshellarg('exiftool');
+        $filepath = \escapeshellarg($filepath);
+        exec("$exiftoolexec $filepath", $output);
+        $output = implode($output);
+
+        // List of sensitive markers to check for post processing.
+        $sensitivemarkers = [
+            'gps lat',
+            'gps long',
+            'gps pos',
+        ];
+
+        foreach ($sensitivemarkers as $marker) {
+            if (stripos($output, $marker) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * Gets the exiftool command to strip the JPG file of all EXIF data.
      *
      * @param string $src The source path of the file.
-     * @param string $dst The source path of the file.
+     * @param string $dst The destination path of the file.
      * @return string The command to use to remove all EXIF data from the file
      */
     private function get_exiftool_command(string $src, string $dst): string {

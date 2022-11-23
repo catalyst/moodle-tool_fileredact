@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 $string['enabled'] = 'Enable/disable this plugin';
 $string['jpgstripexifenabled'] = 'Enable/disable JPG EXIF stripping';
 $string['jpgstripexifenabled_help'] = 'Removes EXIF data from all incoming JPEG files, which might include GPS / Location, personal information and other sensitive data.';
+$string['redactionfailed:failedtoprocess'] = 'Redaction failed: failed to process file';
+$string['redactionfailed:stillsensitive'] = 'Redaction failed: file still contains sensitive markers';
 $string['pdfflattenenabled'] = 'Enable/disable PDF flatten';
 $string['pdfflattenenabled_help'] = 'Flattening a pdf may remove expected functionality, but will remove javascript, actions, events, etc, and try to preserve basic functionality, such as text search if available in the original PDF.';
 $string['pluginname'] = 'File Redact';

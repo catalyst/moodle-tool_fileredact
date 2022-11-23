@@ -56,7 +56,7 @@ class tool_fileredact_jpg_exif_stripping_test extends \advanced_testcase {
         // Convert example jpg.
         (new jpg\strip_exif)->run((object) ['filename' => 'test.jpg'], ['pathname' => $pathname]);
 
-        // Ensure the final jpg does NOT contain javascript markers, thus indicating it was flattened.
+        // Ensure the final jpg does NOT contain sensitive markers (e.g. GPS), thus indicating it was redacted.
         $exiftoolexec = \escapeshellarg('exiftool');
         exec("$exiftoolexec $pathname", $output);
         $output = implode($output);
@@ -65,7 +65,7 @@ class tool_fileredact_jpg_exif_stripping_test extends \advanced_testcase {
     }
 
     /**
-     * Returns a copy of a file to allow for temporary operations on said file without affecting original.
+     * Returns a copy of a file to allow for temporary operations on target file without affecting original.
      *
      * @param  string $filepath to file to copy
      * @return string path to copied file
