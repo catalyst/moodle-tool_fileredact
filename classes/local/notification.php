@@ -14,23 +14,40 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_fileredact\local;
+
 /**
- * Version
+ * Notification handler
  *
  * @package   tool_fileredact
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
  * @copyright Catalyst IT, 2022
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class notification {
 
-defined('MOODLE_INTERNAL') || die();
+    /** @var string */
+    const TARGET_EVERYONE = 'everyone';
 
-$plugin->version = 2022112800;
-$plugin->release = 2022112800;
-$plugin->requires = 2017051500;    // Moodle 3.3 for Totara support.
-$plugin->supported = [35, 401];     // Supports Moodle 3.5 or later.
+    /** @var string */
+    const TARGET_NOONE = 'no-one';
 
-$plugin->component = 'tool_fileredact';
-$plugin->maturity  = MATURITY_ALPHA;
+    /** @var string */
+    const TARGET_ADMINS = 'admins';
 
-$plugin->dependencies = [];
+    /**
+     * Returns whether or not the notification should be displayed to the user
+     *
+     * @return bool
+     */
+    public function should_notify() {
+        // Check if errors / warnings should notify the user.
+        $notifytarget = get_config('notifytarget', 'tool_fileredact');
+        $shouldnotify = $notifytarget === self::TARGET_EVERYONE;
+        if ($notifytarget === self::TARGET_ADMINS && is_siteadmin()) {
+            $shouldnotify = true;
+        }
+
+        return $shouldnotify;
+    }
+}

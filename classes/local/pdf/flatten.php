@@ -16,6 +16,8 @@
 
 namespace tool_fileredact\local\pdf;
 
+use tool_fileredact\local\redaction_method;
+
 /**
  * Flattens the file using ghostscript.
  *
@@ -24,52 +26,37 @@ namespace tool_fileredact\local\pdf;
  * @copyright Catalyst IT, 2022
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class flatten {
-
-    /** @var \stdClass File record */
-    private $filerecord;
-
-    /** @var array additional options (path, contents) provided from the before_file_created hook */
-    private $hookargs;
-
-    /**
-     * Initialise this instance
-     *
-     * @param \stdClass $filerecord
-     * @param array $hookargs
-     */
-    public function __construct(\stdClass $filerecord, array $hookargs) {
-        $this->filerecord = $filerecord;
-        $this->hookargs = $hookargs;
-    }
+class flatten implements redaction_method {
 
     /**
      * Flattens the file using ghostscript
      *
-     * @return bool as to whether the operation was successful
+     * @param \stdClass $filerecord
+     * @param array $hookargs
      */
-    public function run() {
+    public function run(\stdClass $filerecord, array $hookargs) {
         // Get the conversion command.
-        $src = $this->hookargs['pathname'];
+        $src = $hookargs['pathname'];
         $temparea = make_request_directory();
-        $dst = $temparea . DIRECTORY_SEPARATOR . $this->filerecord->filename;
+        $dst = $temparea . DIRECTORY_SEPARATOR . $filerecord->filename;
 
         // Prepare the ghostscript (gs) command.
         $command = $this->get_gs_command($src, $dst);
 
         // Apply conversion.
-        exec($command, $output);
+        exec($command, $output, $code);
 
-        // Test to ensure conversion succeeded or not.
-        if (!file_exists($dst)) {
-            // Something has gone wrong in the conversion.
+        // Test redaction process issues.
+        if ($code !== 0           // Non-zero return code.
+            || !file_exists($dst) // Ensure new file exists.
+        ) {
+            // Something has gone wrong in the redaction process.
             debugging('tool_fileredact: ' . implode($output));
-            return false;
+            throw new \moodle_exception('redactionfailed:failedtoprocess', 'tool_fileredact', '', get_class($this));
         }
 
         // Conversion was successful, so replace the original with the new in one op.
         rename($dst, $src);
-        return true;
     }
 
     /**

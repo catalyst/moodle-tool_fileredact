@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_fileredact\local\notification;
+
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
@@ -38,11 +40,33 @@ if ($hassiteconfig) {
             '1'
         ));
 
+        // Notification Target (for when things go wrong).
+        $choices = [
+            notification::TARGET_ADMINS => get_string('notifytarget:admins', 'tool_fileredact'),
+            notification::TARGET_EVERYONE => get_string('notifytarget:everyone', 'tool_fileredact'),
+            notification::TARGET_NOONE => get_string('notifytarget:no-one', 'tool_fileredact'),
+        ];
+        $settings->add(new admin_setting_configselect(
+            'tool_fileredact/notifytarget',
+            get_string('notifytarget', 'tool_fileredact'),
+            '',
+            notification::TARGET_ADMINS,
+            $choices
+        ));
+
         // PDF Flatten.
         $settings->add(new admin_setting_configcheckbox(
             'tool_fileredact/pdfflattenenabled',
             get_string('pdfflattenenabled', 'tool_fileredact'),
             get_string('pdfflattenenabled_help', 'tool_fileredact'),
+            '1'
+        ));
+
+        // JPG EXIF stripping.
+        $settings->add(new admin_setting_configcheckbox(
+            'tool_fileredact/jpgstripexifenabled',
+            get_string('jpgstripexifenabled', 'tool_fileredact'),
+            get_string('jpgstripexifenabled_help', 'tool_fileredact'),
             '1'
         ));
     }

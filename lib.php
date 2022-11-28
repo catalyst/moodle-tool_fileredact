@@ -24,7 +24,8 @@
  *
  */
 
-use tool_fileredact\local\pdf;
+use tool_fileredact\local\notification;
+use tool_fileredact\local\redaction_controller;
 
 /**
  * Processes a file (e.g. redaction) before the file is created.
@@ -43,13 +44,25 @@ function tool_fileredact_before_file_created(stdClass $filerecord = null, array 
         return;
     }
 
-    // If it's a PDF file, remove non-basic behaviour (javascript, input fields, etc) using ghostscript.
-    $mimetypes = get_mimetypes_array();
-    if (get_config('tool_fileredact', 'pdfflattenenabled')
-        && $filerecord->mimetype === $mimetypes['pdf']['type']
-    ) {
-        $handler = new pdf\flatten($filerecord, $more);
-        $handler->run();
+    // Initialise and run the redactions, if required.
+    $redactor = new redaction_controller($filerecord, $more);
+    $redactor->run();
+
+    if ($redactor->has_errors()) {
+        $notification = new notification();
+        if ($notification->should_notify()) {
+            // List any / all errors that have occurred, if required.
+            foreach ($redactor->errors() as $e) {
+                \core\notification::warning($e->getMessage());
+                // TODO: Add policy check, to change these 'warnings' into 'errors'
+                // if the policy will not allow the files to be kept.
+            }
+        }
+
+        // TODO: Add policy checks, whether or not to allow the file to be kept
+        // or to remove the sensitive file. By default, it will preserve
+        // existing behaviour / functionality of keeping the file even if
+        // redaction fails.
     }
 }
 

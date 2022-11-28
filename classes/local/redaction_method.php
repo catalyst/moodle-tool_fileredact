@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version
+ * The redaction method interface describes the required methods for each redaction strategy
  *
  * @package   tool_fileredact
  * @author    Kevin Pham <kevinpham@catalyst-au.net>
@@ -23,14 +23,15 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace tool_fileredact\local;
 
-$plugin->version = 2022112800;
-$plugin->release = 2022112800;
-$plugin->requires = 2017051500;    // Moodle 3.3 for Totara support.
-$plugin->supported = [35, 401];     // Supports Moodle 3.5 or later.
+interface redaction_method {
 
-$plugin->component = 'tool_fileredact';
-$plugin->maturity  = MATURITY_ALPHA;
-
-$plugin->dependencies = [];
+    /**
+     * Processes redaction for the given file.
+     *
+     * @param \stdClass $filerecord
+     * @param array $hookargs
+     */
+    public function run(\stdClass $filerecord, array $hookargs);
+}
