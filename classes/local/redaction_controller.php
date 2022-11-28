@@ -34,6 +34,9 @@ class redaction_controller {
     /** @var array additional options (path, contents) provided from the before_file_created hook */
     private $hookargs;
 
+    /** @var array errors stored for the run */
+    private $errors = [];
+
     /**
      * Initialise this instance
      *
@@ -63,14 +66,39 @@ class redaction_controller {
             return;
         }
 
+        // Clear the errors for this run.
+        $this->errors = [];
+
         // Get the associated redaction methods.
         $methods = redaction_factory::get_methods($this->filerecord->mimetype);
 
         // For the given methods, run them if they are enabled.
         foreach ($methods as $enabledflag => $methodclass) {
             if (get_config('tool_fileredact', $enabledflag)) {
-                $this->run_method(new $methodclass());
+                try {
+                    $this->run_method(new $methodclass());
+                } catch (\Throwable $e) {
+                    $this->errors[] = $e;
+                }
             }
         }
+    }
+
+    /**
+     * Returns a collection of errors recorded
+     *
+     * @return array of errors / exceptions that occurred
+     */
+    public function errors(): array {
+        return $this->errors;
+    }
+
+    /**
+     * Returns a collection of errors recorded
+     *
+     * @return bool whether or not errors were collected during the redaction process
+     */
+    public function has_errors(): bool {
+        return !empty($this->errors);
     }
 }
