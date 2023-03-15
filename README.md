@@ -16,16 +16,16 @@ File redact is a tool which processes files and strips various content from them
 
 ## Branches
 
-| Moodle version    | Branch           | PHP       |
-|-------------------|------------------|-----------|
-| TBA               | TBA              | TBA       |
+| Moodle version | Branch           | PHP |
+|----------------|------------------|-----|
+| 3.9            | MOODLE_39_STABLE | 7.4 |
 
 ## Dependencies
 
 For the following settings, you will need to install their associated dependencies before you can use them.
 
-| Setting  | Details
-|-------------------|------------------|-----------|
+| Setting  | Details|
+|-------------------|------------------|
 | jpgstripexifenabled | Remove EXIF from JPEG images. <br><small>Requires **exiftool** installed</small>
 | pdflattenenabled | Remove JS, Actions, etc from PDF by flattening it. <br><small>Requires **ghostscript (gs)** installed</small> <br><small>Requires **strings** installed</small>
 
