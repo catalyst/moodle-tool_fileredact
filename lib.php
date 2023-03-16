@@ -44,6 +44,11 @@ function tool_fileredact_before_file_created(stdClass $filerecord = null, array 
         return;
     }
 
+    // Skip hook if it's a unit test.
+    if (PHPUNIT_TEST) {
+        return;
+    }
+
     // Initialise and run the redactions, if required.
     $redactor = new redaction_controller($filerecord, $more);
     $redactor->run();
