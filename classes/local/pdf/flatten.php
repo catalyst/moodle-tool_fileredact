@@ -70,9 +70,11 @@ class flatten implements redaction_method {
         global $CFG;
 
         $gsexec = \escapeshellarg($CFG->pathtogs);
+        $intermediate = get_request_storage_directory() . '/pdftemp';
         $tempdstarg = \escapeshellarg($dst);
         $tempsrcarg = \escapeshellarg($src);
-        $command = "$gsexec -sDEVICE=pdfwrite -dSAFER -dBATCH -dNOPAUSE -sOutputFile=$tempdstarg $tempsrcarg";
-        return $command;
+        $sharedflags = '-dSAFER -dBATCH -dNOPAUSE';
+        // Use a 2 stage execution pipeline via a GS intermediate language that does not support active elements like Javascript.
+        return "$gsexec -sDEVICE=ps2write $sharedflags -sOutputFile=$intermediate $tempsrcarg && $gsexec -sDEVICE=pdfwrite $sharedflags -sOutputFile=$tempdstarg $intermediate";
     }
 }
