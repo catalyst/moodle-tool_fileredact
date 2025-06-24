@@ -15,22 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version
+ * Hook callbacks for tool_fileredact
  *
- * @package   tool_fileredact
- * @author    Kevin Pham <kevinpham@catalyst-au.net>
- * @copyright Catalyst IT, 2022
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    tool_fileredact
+ * @copyright  2024 Peter Burnett <peterburnett@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version = 2025062400;
-$plugin->release = 2025062400;
-$plugin->requires = 2017051500;    // Moodle 3.3 for Totara support.
-$plugin->supported = [405, 405];     // Supports Moodle 3.5 or later.
-
-$plugin->component = 'tool_fileredact';
-$plugin->maturity  = MATURITY_ALPHA;
-
-$plugin->dependencies = [];
+$callbacks = [
+    [
+        'hook' => \core_files\hook\before_file_created::class,
+        'callback' => '\tool_fileredact\local\redaction_controller::before_file_created',
+        'priority' => 200
+    ],
+];

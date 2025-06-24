@@ -101,4 +101,49 @@ class redaction_controller {
     public function has_errors(): bool {
         return !empty($this->errors);
     }
+
+    /**
+     * Hook receiver for the file creation event.
+     *
+     * @param \core_files\hook\before_file_created $hook the hook object
+     */
+    public static function before_file_created(\core_files\hook\before_file_created $hook): void {
+        // Continue only if the plugin is enabled.
+        $enabled = get_config('tool_fileredact', 'enabled');
+        if (!$enabled) {
+            return;
+        }
+
+        $filerecord = $hook->get_filerecord();
+        $hookargs = [
+            'pathname' => $hook->get_filepath(),
+            'contents' => $hook->get_filecontent(),
+        ];
+
+        if (empty($filerecord)) {
+            return;
+        }
+
+        // Skip hook if it's a unit test.
+        if (PHPUNIT_TEST) {
+            return;
+        }
+
+
+        // Initialise and run the redactions, if required.
+        $redactor = new redaction_controller($filerecord, $hookargs);
+        $redactor->run();
+
+        if ($redactor->has_errors()) {
+            $notification = new notification();
+            if ($notification->should_notify()) {
+                // List any / all errors that have occurred, if required.
+                foreach ($redactor->errors() as $e) {
+                    \core\notification::warning($e->getMessage());
+                    // TODO: Add policy check, to change these 'warnings' into 'errors'
+                    // if the policy will not allow the files to be kept.
+                }
+            }
+        }
+    }
 }
