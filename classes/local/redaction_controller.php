@@ -129,7 +129,6 @@ class redaction_controller {
             return;
         }
 
-
         // Initialise and run the redactions, if required.
         $redactor = new redaction_controller($filerecord, $hookargs);
         $redactor->run();

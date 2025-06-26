@@ -25,6 +25,9 @@
 
 namespace tool_fileredact\local;
 
+/**
+ * Interface for running a redaction across a file.
+ */
 interface redaction_method {
 
     /**

@@ -27,6 +27,9 @@
 
 namespace tool_fileredact;
 
+/**
+ * PHPUnit compatability wrapper to operate over several versions of PHPUnit.
+ */
 trait compatibility_trait {
 
     // PHPUnit backwards compatible methods which handles the fallback to previous version calls.
