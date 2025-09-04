@@ -61,9 +61,11 @@ class redaction_controller {
      * Prepares and runs all enabled redaction methods
      */
     public function run() {
-        // For files with empty mimetypes, do nothing.
-        if (!isset($this->filerecord->mimetype)) {
-            return;
+        // For files with empty mimetypes, try to figure it out.
+        if (!isset($this->filerecord->mimetype) && isset($this->hookargs['pathname'])) {
+
+            // Try to infer the mimetype based on extension.
+            $this->filerecord->mimetype = mime_content_type($this->hookargs['pathname']);
         }
 
         // Clear the errors for this run.
