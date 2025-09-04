@@ -68,6 +68,10 @@ class redaction_controller {
             $this->filerecord->mimetype = mime_content_type($this->hookargs['pathname']);
         }
 
+        if (!isset($this->filerecord->mimetype)) {
+            return;
+        }
+
         // Clear the errors for this run.
         $this->errors = [];
 
