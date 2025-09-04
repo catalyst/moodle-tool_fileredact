@@ -1,0 +1,83 @@
+From 46f4b0b56a66d1d2803775c291630d620ed00707 Mon Sep 17 00:00:00 2001
+From: Cameron Ball <cameron@moodle.com>
+Date: Thu, 3 Aug 2017 13:41:50 +0800
+Subject: [PATCH] MDL-59700 filestorage: Add before_file_created hook
+
+---
+ server/lib/filestorage/file_storage.php | 28 +++++++++++++++++++++----
+ 1 file changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/server/lib/filestorage/file_storage.php b/server/lib/filestorage/file_storage.php
+index 767080febd6..31933febc87 100644
+--- a/server/lib/filestorage/file_storage.php
++++ b/server/lib/filestorage/file_storage.php
+@@ -1514,7 +1514,7 @@ class file_storage {
+         $newrecord->status       = empty($filerecord->status) ? 0 : $filerecord->status;
+         $newrecord->sortorder    = $filerecord->sortorder;
+ 
+-        list($newrecord->contenthash, $newrecord->filesize, $newfile) = $this->add_file_to_pool($pathname);
++        list($newrecord->contenthash, $newrecord->filesize, $newfile) = $this->add_file_to_pool($pathname, null, $filerecord);
+ 
+         $newrecord->pathnamehash = $this->get_pathname_hash($newrecord->contextid, $newrecord->component, $newrecord->filearea, $newrecord->itemid, $newrecord->filepath, $newrecord->filename);
+ 
+@@ -1628,7 +1628,7 @@ class file_storage {
+         $newrecord->status       = empty($filerecord->status) ? 0 : $filerecord->status;
+         $newrecord->sortorder    = $filerecord->sortorder;
+ 
+-        list($newrecord->contenthash, $newrecord->filesize, $newfile) = $this->add_string_to_pool($content);
++        list($newrecord->contenthash, $newrecord->filesize, $newfile) = $this->add_string_to_pool($content, $newrecord);
+         $filepathname = $this->path_from_hash($newrecord->contenthash) . '/' . $newrecord->contenthash;
+         // get mimetype by magic bytes
+         $newrecord->mimetype = empty($filerecord->mimetype) ? $this->mimetype($filepathname, $filerecord->filename) : $filerecord->mimetype;
+@@ -1950,6 +1950,22 @@ class file_storage {
+         return $this->create_file_from_string($filerecord, $content);
+     }
+ 
++    /**
++     * before_file_created hook.
++     *
++     * @param stdClass|null $newrecord New file record.
++     * @param string|null $pathname Path to file.
++     * @param string|null $content File content.
++     */
++    protected function call_before_file_created_plugin_functions($newrecord, $pathname = null, $content = null) {
++        $pluginsfunction = get_plugins_with_function('before_file_created');
++        foreach ($pluginsfunction as $plugintype => $plugins) {
++            foreach ($plugins as $pluginfunction) {
++                $pluginfunction($newrecord, ['pathname' => $pathname, 'content' => $content]);
++            }
++        }
++    }
++
+     /**
+      * Add file content to sha1 pool.
+      *
+@@ -1957,9 +1973,11 @@ class file_storage {
+      * @param string $contenthash sha1 hash of content if known (performance only)
+      * @return array (contenthash, filesize, newfile)
+      */
+-    public function add_file_to_pool($pathname, $contenthash = NULL) {
++    public function add_file_to_pool($pathname, $contenthash = NULL, $filerecord = null) {
+         global $CFG;
+ 
++        $this->call_before_file_created_plugin_functions($filerecord, $pathname, null);
++
+         if (!is_readable($pathname)) {
+             throw new file_exception('storedfilecannotread', '', $pathname);
+         }
+@@ -2063,9 +2081,11 @@ class file_storage {
+      * @param string $content file content - binary string
+      * @return array (contenthash, filesize, newfile)
+      */
+-    public function add_string_to_pool($content) {
++    public function add_string_to_pool($content, $newrecord = null) {
+         global $CFG;
+ 
++        $this->call_before_file_created_plugin_functions($newrecord, null, $content);
++
+         $contenthash = sha1($content);
+         $filesize = strlen($content); // binary length
+ 
+-- 
+2.43.0
+
